@@ -3,6 +3,15 @@
 [![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 [![Java](https://img.shields.io/badge/Java-8%2B-orange.svg)](https://www.oracle.com/java/)
 
+> [!WARNING]
+> **声明**：本项目完全由 AI 实现，本人只使用压缩归档，检索相关的存在问题。
+> 
+> 目前日志**压缩编码与无损还原**核心链路已在线上生产环境稳定验证；但**检索相关功能**（如通配符查询分词 `search/*`、通配符变量匹配过滤 `batchEncodedVarsWildcardMatch` 等）与原版实现存在已知差异与边界异常问题，如需使用检索模块请谨慎评估。
+>
+> *(Notice: This project is completely implemented by AI. The author currently only uses the compression/archiving and decompression features. Search and wildcard-query related functionalities have known issues and edge-case discrepancies.)*
+
+---
+
 **CLP Pure Java** is a 100% Pure Java implementation of the core encoding and decoding algorithms of **CLP (Compressed Log Processor)**.
 
 It provides 1:1 algorithmic parity with the official [YScope CLP C++ implementation](https://github.com/y-scope/clp) while eliminating all native JNI / FFI dependencies, making it seamlessly portable across all operating systems and Java environments.
@@ -72,12 +81,12 @@ public class Example {
         EncodedMessage encodedMessage = new EncodedMessage();
         encoder.encodeMessage(originalLog, encodedMessage);
 
-        System.out.println("Logtype template: " + new String(encodedMessage.logtype, java.nio.charset.StandardCharsets.UTF_8));
-        System.out.println("Encoded numbers count: " + encodedMessage.encodedVars.length);
-        System.out.println("Dictionary variables count: " + encodedMessage.dictionaryVars.length);
+        System.out.println("Logtype template: " + encodedMessage.getLogTypeAsString());
+        System.out.println("Encoded numbers count: " + (encodedMessage.getEncodedVars() == null ? 0 : encodedMessage.getEncodedVars().length));
+        System.out.println("Dictionary variables count: " + (encodedMessage.getDictionaryVarsAsStrings() == null ? 0 : encodedMessage.getDictionaryVarsAsStrings().length));
 
         // 2. Decode (100% lossless reproduction)
-        String decodedLog = decoder.decodeMessage(encodedMessage);
+        String decodedLog = decoder.decodeMessage(encodedMessage.getLogTypeAsString(), encodedMessage.getDictionaryVarsAsStrings(), encodedMessage.getEncodedVars());
         assert originalLog.equals(decodedLog);
         System.out.println("Decoded matches original: " + originalLog.equals(decodedLog));
     }
